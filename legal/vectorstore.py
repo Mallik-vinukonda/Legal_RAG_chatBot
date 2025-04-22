@@ -7,12 +7,9 @@ import streamlit as st
 
 def setup_vectorstore(user_specific=False, vector_db_dir=None, user_id=None):
     try:
-        persist_directory = vector_db_dir
-        if user_specific and user_id:
-            persist_directory = os.path.join(vector_db_dir, user_id)
-            os.makedirs(persist_directory, exist_ok=True)
+        # Use in-memory Chroma for Streamlit Cloud compatibility
         embeddings = HuggingFaceEmbeddings()
-        vectorstore = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
+        vectorstore = Chroma(embedding_function=embeddings)  # No persist_directory
         return vectorstore
     except Exception as e:
         st.session_state.error = f"Error setting up vector store: {str(e)}"
@@ -38,15 +35,13 @@ def vectorize_data(data_dir, vector_db_dir, user_id, user_files=None):
         if not documents:
             st.session_state.processing = False
             return False, "No documents found or could not be processed."
-        text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=500)
+        text_splitter = CharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
         text_chunks = text_splitter.split_documents(documents)
         embeddings = HuggingFaceEmbeddings()
-        user_vector_dir = os.path.join(vector_db_dir, user_id)
-        os.makedirs(user_vector_dir, exist_ok=True)
+        # Use in-memory Chroma for Streamlit Cloud compatibility
         vectordb = Chroma.from_documents(
             documents=text_chunks,
-            embedding=embeddings,
-            persist_directory=user_vector_dir
+            embedding=embeddings
         )
         st.session_state.processing = False
         st.session_state.documents_vectorized = True
