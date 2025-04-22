@@ -2,13 +2,15 @@
 
 A modern, AI-powered virtual legal assistant designed for India. Instantly analyze legal documents and get answers to your legal questions with a beautiful, glassmorphic interface. 
 
+
+![Screenshot 2025-04-22 at 10 08 51 PM](https://github.com/user-attachments/assets/f708662c-d6fc-43f6-ba90-589854f251ea)
+
 Vaakeel Saab can answer all your legal questions and provide guidance on Indian law, rights, and procedures. The AI is trained and developed using the **Constitution of India** and other public Indian legal resources, ensuring responses are relevant, reliable, and tailored to the Indian legal system.
 
 Whether you upload a legal document for analysis or simply ask a question, Vaakeel Saab is here to help you understand your rights and navigate legal matters with confidence.
 
 ----
 
-![Screenshot 2025-04-22 at 10 08 51 PM](https://github.com/user-attachments/assets/f708662c-d6fc-43f6-ba90-589854f251ea)
 
 
 
