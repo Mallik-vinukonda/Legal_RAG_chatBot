@@ -9,3 +9,7 @@ nltk==3.8.1
 google-generativeai
 streamlit-authenticator
 faiss-cpu
+chromadb
+chromadb[duckdb]
+langchain-chroma==0.1.3
+chromadb==0.4.24
