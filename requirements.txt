@@ -8,3 +8,4 @@ unstructured==0.15.0
 unstructured[pdf]==0.15.0
 nltk==3.8.1
 google-generativeai
+streamlit-authenticator
