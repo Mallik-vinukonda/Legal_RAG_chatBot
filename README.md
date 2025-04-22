@@ -6,7 +6,13 @@ Vaakeel Saab can answer all your legal questions and provide guidance on Indian 
 
 Whether you upload a legal document for analysis or simply ask a question, Vaakeel Saab is here to help you understand your rights and navigate legal matters with confidence.
 
----
+----
+
+![Screenshot 2025-04-22 at 10 08 51 PM](https://github.com/user-attachments/assets/f708662c-d6fc-43f6-ba90-589854f251ea)
+
+
+
+-----
 
 ## 🛠️ Tech Stack
 
