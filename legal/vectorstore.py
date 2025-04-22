@@ -1,15 +1,14 @@
 import os
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import UnstructuredFileLoader, DirectoryLoader
 from langchain_text_splitters import CharacterTextSplitter
 import streamlit as st
 
 def setup_vectorstore(user_specific=False, vector_db_dir=None, user_id=None):
     try:
-        # Use in-memory Chroma for Streamlit Cloud compatibility
         embeddings = HuggingFaceEmbeddings()
-        vectorstore = Chroma(embedding_function=embeddings)  # No persist_directory
+        vectorstore = FAISS(embedding_function=embeddings)
         return vectorstore
     except Exception as e:
         st.session_state.error = f"Error setting up vector store: {str(e)}"
@@ -38,8 +37,7 @@ def vectorize_data(data_dir, vector_db_dir, user_id, user_files=None):
         text_splitter = CharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
         text_chunks = text_splitter.split_documents(documents)
         embeddings = HuggingFaceEmbeddings()
-        # Use in-memory Chroma for Streamlit Cloud compatibility
-        vectordb = Chroma.from_documents(
+        vectordb = FAISS.from_documents(
             documents=text_chunks,
             embedding=embeddings
         )
