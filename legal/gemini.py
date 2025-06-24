@@ -6,7 +6,7 @@ class GeminiChat:
     def __init__(self):
         self.last_request_time = 0
         self.request_delay = 1.2  # seconds between requests
-        self.current_model = "gemini-1.5-flash"  # Updated to Flash 2.0 equivalent
+        self.current_model = "gemini-1.5-flash"
         self.fallback_model = "gemini-1.0-pro"
         self.max_retries = 2
         
@@ -49,7 +49,7 @@ class GeminiChat:
             "temperature": temperature,
             "top_p": 0.9,
             "top_k": 32,
-            "max_output_tokens": 4096,  # Reduced for cost efficiency
+            "max_output_tokens": 4096,
         }
         
         model = genai.GenerativeModel(self.current_model)
@@ -85,7 +85,7 @@ class GeminiChat:
             {self.system_prompt}
             
             [DOCUMENT CONTEXT]
-            {context[:6000]}  # Truncate to save tokens
+            {context[:6000]}
             
             [USER QUESTION]
             {prompt}
@@ -109,7 +109,6 @@ class GeminiChat:
 
     def _format_response(self, text: str) -> str:
         """Format the raw API response"""
-        # Add section headers for readability
         replacements = {
             "IPC Section": "📜 **IPC Section**",
             "Article": "⚖️ **Article**",
@@ -137,7 +136,6 @@ class GeminiChat:
                    "personal/identifiable information.")
         
         return f"⚠️ Technical difficulty: {error_msg[:200]}... Please try again."
-
 
 # Singleton instance for the app
 legal_assistant = GeminiChat()
