@@ -49,20 +49,35 @@ if "error" not in st.session_state:
     st.session_state.error = None
 if "last_request_time" not in st.session_state:
     st.session_state.last_request_time = 0
+if "current_model" not in st.session_state:
+    st.session_state.current_model = "gemini-2.0-flash"
 
-# --- Rate Limiting ---
+FALLBACK_MODEL = "gemini-1.0-pro"
 REQUEST_DELAY = 1.2  # seconds between requests
 
 # --- Custom CSS ---
 with open(os.path.join(working_dir, "assets", "style.css"), "r") as css_file:
     st.markdown(f"<style>{css_file.read()}</style>", unsafe_allow_html=True)
 
+# --- Sticky Chat Input ---
+st.markdown("""
+<style>
+.stChatInputContainer {
+    position: sticky !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 99;
+    backdrop-filter: blur(6px);
+}
+</style>
+""", unsafe_allow_html=True)
+
 # --- Navigation Bar ---
 st.markdown("""
 <nav style='position:sticky;top:0;z-index:100;display:flex;gap:28px;align-items:center;justify-content:center;background:rgba(30,30,30,0.56);backdrop-filter:blur(12px) saturate(120%);border-radius:18px;margin:20px 0 30px 0;padding:10px 38px 10px 38px;box-shadow:0 2px 18px 0 rgba(0,0,0,0.12);width:max-content;'>
-    <a href="#upload-section" style='color:#fff;text-decoration:none;font-weight:600;font-size:1.08rem;padding:6px 18px;border-radius:8px;transition:background 0.2s;' onmouseover="this.style.background='rgba(29,233,182,0.13)'" onmouseout="this.style.background='none'">Upload Docs</a>
-    <a href="#faq-section" style='color:#fff;text-decoration:none;font-weight:600;font-size:1.08rem;padding:6px 18px;border-radius:8px;transition:background 0.2s;' onmouseover="this.style.background='rgba(29,233,182,0.13)'" onmouseout="this.style.background='none'">Common FAQs</a>
-    <a href="#about-section" style='color:#fff;text-decoration:none;font-weight:600;font-size:1.08rem;padding:6px 18px;border-radius:8px;transition:background 0.2s;' onmouseover="this.style.background='rgba(29,233,182,0.13)'" onmouseout="this.style.background='none'">About</a>
+    <a href="#upload-section" style='color:#fff;text-decoration:none;font-weight:600;font-size:1.08rem;padding:6px 18px;border-radius:8px;'>Upload Docs</a>
+    <a href="#faq-section" style='color:#fff;text-decoration:none;font-weight:600;font-size:1.08rem;padding:6px 18px;border-radius:8px;'>Common FAQs</a>
+    <a href="#about-section" style='color:#fff;text-decoration:none;font-weight:600;font-size:1.08rem;padding:6px 18px;border-radius:8px;'>About</a>
 </nav>
 """, unsafe_allow_html=True)
 
@@ -85,9 +100,9 @@ with col1:
         <li>🆓 Free basic legal guidance</li>
     </ul>
     <div style='margin-top:14px;font-size:1rem;color:#7ddcd3;background:rgba(29,233,182,0.07);padding:8px 18px;border-radius:10px;width:max-content;'>
-        <strong>Current Model:</strong> Gemini Flash 2.0
+        <strong>Current Model:</strong> {model}
     </div>
-    """, unsafe_allow_html=True)
+    """.replace("{model}", st.session_state.current_model), unsafe_allow_html=True)
 with col2:
     st.image("assets/ai2.png", width=320)
 
@@ -148,9 +163,7 @@ with process_col2:
             st.error(f"Error clearing documents: {str(e)}")
 
 # --- Chat Interface ---
-st.markdown("<div id='ask-section'></div>", unsafe_allow_html=True)
 st.markdown("### 💬 Ask Vaakeel Saab")
-
 chat_container = st.container()
 with chat_container:
     display_chat_history()
@@ -159,69 +172,58 @@ user_query = st.chat_input("Type your legal question here...")
 if user_query:
     current_time = time.time()
     time_since_last = current_time - st.session_state.last_request_time
-    
-    # Rate limiting
     if time_since_last < REQUEST_DELAY:
         time.sleep(REQUEST_DELAY - time_since_last)
-    
     st.session_state.last_request_time = time.time()
-    
-    # Add user message to chat history
-    if {"role": "user", "content": user_query} not in st.session_state.chat_history:
-        st.session_state.chat_history.append({"role": "user", "content": user_query})
-        with chat_container:
-            display_chat_history()
-        
-        # Retrieve relevant document context if available
-        context = None
-        if st.session_state.documents_vectorized:
-            try:
-                vectorstore = setup_vectorstore(
-                    user_specific=True,
-                    vector_db_dir=vector_db_dir,
-                    user_id=st.session_state.user_id
-                )
-                if vectorstore:
-                    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-                    docs = retriever.get_relevant_documents(user_query)
-                    if docs:
-                        context = "\n\n".join([
-                            f"📄 Document Excerpt {i+1}:\n{doc.page_content[:2000]}..." 
-                            for i, doc in enumerate(docs)
-                        ])
-            except Exception as e:
-                st.error(f"Document retrieval error: {str(e)}")
-        
-        # Generate AI response with error handling
+
+    st.session_state.chat_history.append({"role": "user", "content": user_query})
+    with chat_container:
+        display_chat_history()
+
+    context = None
+    if st.session_state.documents_vectorized:
         try:
-            with st.status(f"Analyzing with {st.session_state.current_model}...", expanded=True) as status:
-                try:
+            vectorstore = setup_vectorstore(
+                user_specific=True,
+                vector_db_dir=vector_db_dir,
+                user_id=st.session_state.user_id
+            )
+            if vectorstore:
+                retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+                docs = retriever.get_relevant_documents(user_query)
+                if docs:
+                    context = "\n\n".join([
+                        f"📄 Document Excerpt {i+1}:\n{doc.page_content[:2000]}..." 
+                        for i, doc in enumerate(docs)
+                    ])
+        except Exception as e:
+            st.error(f"Document retrieval error: {str(e)}")
+
+    try:
+        with st.status(f"Analyzing with {st.session_state.current_model}...", expanded=True) as status:
+            try:
+                ai_response = gemini_chat(
+                    user_query,
+                    context=context
+                )
+                status.update(label="Analysis Complete", state="complete", expanded=False)
+            except Exception as e:
+                if "quota" in str(e).lower():
+                    st.session_state.current_model = FALLBACK_MODEL
+                    st.warning(f"Switched to {FALLBACK_MODEL} due to API limits")
                     ai_response = gemini_chat(
                         user_query,
-                        context=context,
-                        model_name=st.session_state.current_model
+                        context=context
                     )
-                    status.update(label="Analysis Complete", state="complete", expanded=False)
-                except Exception as e:
-                    if "quota" in str(e).lower():
-                        st.session_state.current_model = FALLBACK_MODEL
-                        st.warning(f"Switched to {FALLBACK_MODEL} due to API limits")
-                        ai_response = gemini_chat(
-                            user_query,
-                            context=context,
-                            model_name=FALLBACK_MODEL
-                        )
-                    else:
-                        ai_response = f"⚠️ System Error: {str(e)}"
-                    status.update(label="Completed with warnings", state="error")
-        except Exception as e:
-            ai_response = f"⚠️ Processing Error: {str(e)}"
-        
-        # Add AI response to chat history
-        if {"role": "assistant", "content": ai_response} not in st.session_state.chat_history:
-            st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
-            with chat_container:
-                display_chat_history()
+                else:
+                    ai_response = f"⚠️ System Error: {str(e)}"
+                status.update(label="Completed with warnings", state="error")
+    except Exception as e:
+        ai_response = f"⚠️ Processing Error: {str(e)}"
+
+    st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+    with chat_container:
+        display_chat_history()
 
 # --- FAQ Section ---
 st.markdown("<div id='faq-section'></div>", unsafe_allow_html=True)
