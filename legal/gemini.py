@@ -1,28 +1,34 @@
 import os
 import time
-import google.generativeai as genai
 from typing import Optional
+import google.generativeai as genai
+from dotenv import load_dotenv
 
+# --- Load .env and configure API ---
+load_dotenv()
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    raise ValueError("❌ GEMINI_API_KEY not found in environment variables.")
+
+genai.configure(api_key=api_key)
+
+
+# --- GeminiChat Class Definition ---
 class GeminiChat:
-    def __init__(self, api_key: str, default_model: str = "gemini-pro", max_retries: int = 3):
+    def __init__(self, api_key: str, default_model: str = "gemini-1.5-flash", max_retries: int = 3):
         self.api_key = api_key
         self.default_model = default_model
         self.max_retries = max_retries
         self.retry_delay = 2
         self.last_prompt = None
         self.last_response = None
-        self._configure_genai()
-
-    def _configure_genai(self):
-        os.environ["GOOGLE_API_KEY"] = self.api_key
-        genai.configure(api_key=self.api_key)
 
     def _rate_limit(self):
         time.sleep(1)  # Basic rate-limiting to avoid overloading the API
 
     def _build_prompt(self, prompt: str, context: Optional[str] = None) -> str:
         if context:
-            return f"Context: {context}\n\nQuestion: {prompt}"
+            return f"Context:\n{context}\n\nQuestion: {prompt}"
         return prompt
 
     def _format_response(self, text: str) -> str:
@@ -32,7 +38,13 @@ class GeminiChat:
         summary_lines = text.split("\n")[:5]
         return "\n".join(summary_lines) + "\n\n📌 Ask a follow-up for more details."
 
-    def generate_response(self, prompt: str, context: Optional[str] = None, temperature: float = 0.3, model_name: Optional[str] = None) -> str:
+    def generate_response(
+        self,
+        prompt: str,
+        context: Optional[str] = None,
+        temperature: float = 0.3,
+        model_name: Optional[str] = None
+    ) -> str:
         self._rate_limit()
 
         if prompt.strip().lower() == (self.last_prompt or "").strip().lower():
@@ -56,4 +68,11 @@ class GeminiChat:
                 if attempt < self.max_retries - 1:
                     time.sleep(self.retry_delay)
                 else:
-                    return f"❌ Failed to generate response after {self.max_retries} attempts. Error: {str(e)}"
+                    return f"❌ Failed to generate response after {self.max_retries} attempts.\n\nError: {str(e)}"
+
+
+# --- Singleton Instance + Functional Interface ---
+gemini_instance = GeminiChat(api_key=api_key)
+
+def gemini_chat(prompt: str, context: Optional[str] = None) -> str:
+    return gemini_instance.generate_response(prompt, context)
