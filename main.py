@@ -29,10 +29,6 @@ if not GEMINI_API_KEY:
 import google.generativeai as genai
 genai.configure(api_key=GEMINI_API_KEY)
 
-# --- Model Configuration ---
-DEFAULT_MODEL = "gemini-1.5-flash"  # Updated to Flash 2.0 equivalent
-FALLBACK_MODEL = "gemini-1.0-pro"  # Fallback if quota exceeded
-
 # --- Path Setup ---
 working_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(working_dir, "data")
@@ -53,8 +49,6 @@ if "error" not in st.session_state:
     st.session_state.error = None
 if "last_request_time" not in st.session_state:
     st.session_state.last_request_time = 0
-if "current_model" not in st.session_state:
-    st.session_state.current_model = DEFAULT_MODEL
 
 # --- Rate Limiting ---
 REQUEST_DELAY = 1.2  # seconds between requests
@@ -91,7 +85,7 @@ with col1:
         <li>🆓 Free basic legal guidance</li>
     </ul>
     <div style='margin-top:14px;font-size:1rem;color:#7ddcd3;background:rgba(29,233,182,0.07);padding:8px 18px;border-radius:10px;width:max-content;'>
-        <strong>Current Model:</strong> {st.session_state.current_model}
+        <strong>Current Model:</strong> Gemini Flash 2.0
     </div>
     """, unsafe_allow_html=True)
 with col2:
@@ -240,19 +234,9 @@ st.markdown("""
 <div class='glass-card' style='margin-top:24px;'>
     <span style='font-size:1.25rem;font-weight:700;color:#fff;'>About Vaakeel Saab</span>
     <div style='font-size:1.09rem;color:#e0e0e0;margin-top:10px;'>
-        <p>Developed by <strong>Mallik Vinukonda</strong>, this application leverages cutting-edge AI to democratize access to legal information in India.</p>
+        <p>Hi, I'm Mallik Vinukonda, a passionate Computer Science student with a deep interest in technology and its real-world impact. Growing up with a father who is a dedicated lawyer, I witnessed firsthand the challenges and opportunities in the legal field. Inspired by his work and driven by my love for coding, I created this AI-powered legal assistant to make legal information more accessible to everyone in India.</p>
         
-        <p><strong>Key Features:</strong></p>
-        <ul>
-            <li>Powered by Google's Gemini Flash 2.0 AI</li>
-            <li>Specialized in Indian legal framework</li>
-            <li>Document analysis with 128K context window</li>
-            <li>Cost-efficient operations</li>
-        </ul>
-        
-        <p><strong>Disclaimer:</strong> This tool provides general legal information, not professional legal advice. For complex matters, please consult a qualified advocate.</p>
-    </div>
-</div>
+        <p>This project blends my technical skills and personal experiences to help bridge the gap between law and technology for the benefit of all.</p>
 """, unsafe_allow_html=True)
 
 # --- Footer ---
