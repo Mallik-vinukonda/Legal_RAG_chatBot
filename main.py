@@ -234,10 +234,11 @@ st.markdown("""
 <div class='glass-card' style='margin-top:24px;'>
     <span style='font-size:1.25rem;font-weight:700;color:#fff;'>About Vaakeel Saab</span>
     <div style='font-size:1.09rem;color:#e0e0e0;margin-top:10px;'>
-        <p>Hi, I'm Mallik Vinukonda, a passionate Computer Science student with a deep interest in technology and its real-world impact. Growing up with a father who is a dedicated lawyer, I witnessed firsthand the challenges and opportunities in the legal field. Inspired by his work and driven by my love for coding, I created this AI-powered legal assistant to make legal information more accessible to everyone in India.</p>
+        <p>Hi, I'm Mallik Vinukonda, a passionate Computer Science student with a deep interest in technology and its real-world impact. Growing up with a father who is a dedicated lawyer, I witnessed firsthand the challenges and opportunities in the legal field. Inspired by his work and driven by my love for coding, I created this AI-powered legal assistant to make legal information more accessible to everyone in India .
         
-        <p>This project blends my technical skills and personal experiences to help bridge the gap between law and technology for the benefit of all.</p>
-""", unsafe_allow_html=True)
+        This project blends my technical skills and personal experiences to help bridge the gap between law and technology for the benefit of all.</p>
+"""
+            , unsafe_allow_html=True)
 
 # --- Footer ---
 st.markdown("---")
