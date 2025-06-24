@@ -237,8 +237,7 @@ st.markdown("""
         <p>Hi, I'm Mallik Vinukonda, a passionate Computer Science student with a deep interest in technology and its real-world impact. Growing up with a father who is a dedicated lawyer, I witnessed firsthand the challenges and opportunities in the legal field. Inspired by his work and driven by my love for coding, I created this AI-powered legal assistant to make legal information more accessible to everyone in India .
         
         This project blends my technical skills and personal experiences to help bridge the gap between law and technology for the benefit of all.</p>
-"""
-            , unsafe_allow_html=True)
+""")
 
 # --- Footer ---
 st.markdown("---")
