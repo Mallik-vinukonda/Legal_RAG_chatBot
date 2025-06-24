@@ -6,7 +6,7 @@ class GeminiChat:
     def __init__(self):
         self.last_request_time = 0
         self.request_delay = 1.2  # seconds between requests
-        self.current_model = "gemini-1.5-flash"
+        self.current_model = "gemini-2.0-flash"
         self.fallback_model = "gemini-1.0-pro"
         self.max_retries = 2
         
